@@ -8,6 +8,7 @@ use App\Models\Orders;
 use App\Models\Products;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
 class MainController extends Controller
 {
@@ -104,7 +105,7 @@ class MainController extends Controller
             'qty' => $request->input('quantity'),
             'description' => $request->input('description'),
             'category_id' => $request->input('category_id'),
-            'discount' =>$request->input('discount'),
+            'discount' => $request->input('discount'),
             'image' => $imagePath ?? "", // Store as a single image path
             'gallery' => $galleryPathString ?? "", // Store gallery images as a comma-separated string
         ]);
@@ -135,6 +136,10 @@ class MainController extends Controller
     }
     public function AddOrders(Request $request)
     {
+        $products = Products::where('id', $request->product_id)->first();
+        $calulatedqty = $products->qty - $request->qty;
+        $products->qty = $calulatedqty;
+        $products->save();
         $order = new Orders();
         $order->product_id = $request->product_id;
         $order->name = $request->name;
