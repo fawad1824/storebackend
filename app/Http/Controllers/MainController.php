@@ -12,10 +12,6 @@ use Intervention\Image\Facades\Image;
 
 class MainController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('checkSanctumToken');
-    }
 
     public function __invoke()
     {
@@ -169,9 +165,5 @@ class MainController extends Controller
             "data" => $data, // Use => instead of =
             "message" => $message, // Use => instead of =
         ], 200);
-    }
-    public function userCheck()
-    {
-        return 1;
     }
 }
