@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    /**
-     * Create User
-     * @param Request $request
-     * @return User
-     */
     public function createUser(Request $request)
     {
         try {
@@ -74,15 +69,15 @@ class AuthController extends Controller
 
             if ($validateUser->fails()) {
                 return response()->json([
-                    'status' => false,
+                    'status' => 403,
                     'message' => 'validation error',
                     'errors' => $validateUser->errors()
-                ], 401);
+                ], 403);
             }
 
             if (!Auth::attempt($request->only(['email', 'password']))) {
                 return response()->json([
-                    'status' => false,
+                    'status' => 401,
                     'message' => 'Email & Password does not match with our record.',
                 ], 401);
             }
@@ -91,6 +86,7 @@ class AuthController extends Controller
             $token = $user->createToken("API TOKEN")->plainTextToken;
             $token = explode("|", $token);
             return response()->json([
+                'status' => 200,
                 'message' => 'User Logged In Successfully',
                 "user" => auth()->user(),
                 'token' => $token[1]
@@ -103,7 +99,8 @@ class AuthController extends Controller
         }
     }
 
-    public function userCheck(){
+    public function userCheck()
+    {
         return 1;
     }
 }

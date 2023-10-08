@@ -23,9 +23,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [MainController::class, 'userCheck']);
 });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
 
 // category
 Route::get('/category',[MainController::class,'Category']);
