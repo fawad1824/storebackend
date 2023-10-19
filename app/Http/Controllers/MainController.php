@@ -73,6 +73,96 @@ class MainController extends Controller
     }
     public function AddProduct(Request $request)
     {
+
+        $galleryPicturesEn = [];
+        $galleryPicturesAr = [];
+
+        foreach ($request->all() as $key => $value) {
+            if (strpos($key, 'galleryPictureen') === 0) {
+                // This is an English file input
+                $galleryPicturesEn[] = $value;
+            } elseif (strpos($key, 'galleryPicturear') === 0) {
+                // This is an Arabic file input
+                $galleryPicturesAr[] = $value;
+            }
+        }
+
+
+        $enPaths = [];
+        $arPaths = [];
+
+        foreach ($galleryPicturesEn as $file) {
+            $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/products/', $imageName);
+            $enPaths[] = asset('storage/products/' . $imageName);
+        }
+
+        foreach ($galleryPicturesAr as $file) {
+            $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/products/', $imageName);
+            $arPaths[] = asset('storage/products/' . $imageName);
+        }
+
+
+
+        $string = $request->input('nameen');
+        // Remove spaces and convert to lowercase with hyphens
+        $modifiedString = strtolower(str_replace(' ', '-', $string));
+
+        // Check if English data is present
+        if ($request->has('nameen')) {
+            $product = new Products();
+            $product->name = $request->input('nameen');
+            $product->slug = $modifiedString; // Set the slug for the English product
+            $product->price = $request->input('priceen');
+            $product->discount = $request->input('discounten');
+            $product->qty = $request->input('quantityen');
+            $product->category_id = $request->input('categoryen');
+            $product->description = $request->input('descriptionen');
+            $product->is_lan = 'en';
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . '.' . $image->getClientOriginalExtension();
+                $image->storeAs('public/products/', $imageName);;
+                $product->image = asset('storage/products/' . $imageName);
+            }
+
+            $enGalleryUrlse = implode(',', $enPaths);
+            $product->gallery = $enGalleryUrlse;
+            $product->save();
+        }
+
+        // Check if Arabic data is present
+        if ($request->has('namear')) {
+            $product1 = new Products();
+            $product1->name = $request->input('namear');
+            $product1->slug = $modifiedString; // Set the slug for the Arabic product
+            $product1->price = $request->input('pricear');
+            $product1->discount = $request->input('discountar');
+            $product1->qty = $request->input('quantityar');
+            $product1->category_id = $request->input('categoryar');
+            $product1->description = $request->input('descriptionar');
+            $product1->is_lan = 'ar';
+            if ($request->hasFile('image2')) {
+                $image1 = $request->file('image2');
+                $imageName1 = time() . '.' . $image1->getClientOriginalExtension();
+                $image1->storeAs('public/products/', $imageName);
+                $product1->image = asset('storage/products/' . $imageName1);
+            }
+
+            $enGalleryUrls = implode(',', $arPaths);
+            $product1->gallery = $enGalleryUrls;
+            $product1->save();
+        }
+
+        return response()->json(['message' => 'Product saved successfully']);
+        die();
+
+
+
+        return response()->json(['product' => $request->all()], 201);
+
+
         // Handle image uploads
         if ($request->hasFile('images')) {
             $image = $request->file('images')[0];
@@ -119,10 +209,40 @@ class MainController extends Controller
 
     public function deleteProduct(Request $request)
     {
-        Products::where('id', $request->id)->delete();
+        $productslug = Products::where('id', $request->id)->first();
+        $product = Products::where('slug', $productslug->slug)->where('is_lan', 'en')->first();
+        $this->deleteImage($product);
+        $product1 = Products::where('slug', $productslug->slug)->where('is_lan', 'ar')->first();
+        $this->deleteImage($product1);
+
+        // Delete the product from the database
+        Products::where('slug', $productslug->slug)->delete();
         return response()->json(['message' => 'Product Deleted successfully'], 200);
     }
+    public function deleteImage($product)
+    {
 
+        // Delete the associated images and gallery from storage
+        if (isset($product->image) && !empty($product->image)) {
+            // Construct the local image path
+            $imagePath = public_path($product->image);
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+        }
+
+        if (isset($product->gallery) && !empty($product->gallery)) {
+            // Delete the product's gallery images
+            $galleryPaths = explode(',', $product->gallery);
+            foreach ($galleryPaths as $galleryPath) {
+                // Construct the local gallery image path
+                $galleryPath = public_path($galleryPath);
+                if (file_exists($galleryPath)) {
+                    unlink($galleryPath);
+                }
+            }
+        }
+    }
 
     // Orders
     public function Orders()

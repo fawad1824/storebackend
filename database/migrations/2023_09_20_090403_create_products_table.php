@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('qty');
             $table->string('category_id');
             $table->string('discount');
+            $table->string('is_lan')->nullable('');
             $table->timestamps();
         });
     }

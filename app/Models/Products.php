@@ -18,6 +18,7 @@ class Products extends Model
         'description',
         'image',
         'gallery',
-        'discount'
+        'discount',
+        'is_lan'
     ];
 }
