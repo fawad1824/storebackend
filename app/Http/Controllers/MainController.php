@@ -17,6 +17,9 @@ class MainController extends Controller
     {
         // Your controller logic here
     }
+    public function userCheck(){
+        return auth()->user();
+    }
 
     // category
     public function Category()
@@ -61,13 +64,24 @@ class MainController extends Controller
 
         return response()->json($category, 200);
     }
-    public function GetSingleProduct($name)
+    public function GetSingleProduct(Request $request,$name)
     {
-        $category = DB::table('category')
+        if($request->language=='en'){
+            $category = DB::table('category')
             ->join('products', 'category.id', '=', 'products.category_id')
             ->select('*', 'category.name as category')
             ->where('slug', $name)
+            ->where('is_lan','en')
             ->first();
+        }else{
+             $category = DB::table('category')
+            ->join('products', 'category.id', '=', 'products.category_id')
+            ->select('*', 'category.name as category')
+            ->where('slug', $name)
+            ->where('is_lan','ar')
+            ->first();
+
+        }
 
         return response()->json($category, 200);
     }

@@ -85,6 +85,7 @@ class AuthController extends Controller
             $user = User::where('email', $request->email)->first();
             $token = $user->createToken("API TOKEN")->plainTextToken;
             $token = explode("|", $token);
+            User::where('id',auth()->user()->id)->update(['remember_token'=>$token[1]]);
             return response()->json([
                 'status' => 200,
                 'message' => 'User Logged In Successfully',
@@ -99,8 +100,10 @@ class AuthController extends Controller
         }
     }
 
-    public function userCheck()
+    public function me (Request $request)
     {
-        return 1;
+        return $bearer = $request->bearerToken();
+
+        return  auth()->user();
     }
 }
